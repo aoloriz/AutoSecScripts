@@ -1,4 +1,4 @@
-#/bin/bash!
+#!/bin/bash
 
 # analyze-dpkg: Tool for sending all ELF files in packages 
 # maintained for a Debian based Linux distribution (Ubuntu, Kali etc.) to 
@@ -53,7 +53,8 @@ echo "ELF Type,Package,Filepath" > OTHER.log
 
 #Function parameters: $1= ELF path	$2=Package Name
 function elfsort() {
-		local ESORT=$(readelf -h ${1} | grep 'Type:' | sed 's/  Type: *//; s/ (.*//')
+		local ESORT
+        ESORT=$(readelf -h ${1} | grep 'Type:' | sed 's/  Type: *//; s/ (.*//')
 		case ${ESORT} in
 				DYN)
 						echo "DYN,${2},${1}" >> DYN.log
@@ -80,16 +81,14 @@ function elfsort() {
 
 #Function paremeters: $1=package name $2=log filename
 function analyze-send() {
-		local PFLIST=$(apt-file list $1 | sed 's/'${1}'://')
+		local PFLIST
+        PFLIST=$(apt-file list $1 | sed 's/'${1}'://')
 		for IDELF in ${PFLIST}
 		do
 				#Check if file is an ELF
-				readelf -h ${IDELF} &> /dev/null
-				local ECHK=$(echo $?)
-
-				if [ ${ECHK} -eq 0 ]
+                if readelf -h ${IDELF} &> /dev/null;
 				then
-						echo "${1}: ${IDELF}" >> $2  #Log Filename
+						echo "${1}: ${IDELF}" >> "$2"  #Log Filename
 						elfsort ${IDELF} ${1}
 						curl -s -F "file=@${IDELF}" \
 								-H "Authorization: Bearer ${TOKEN}" \
@@ -107,9 +106,7 @@ function repo-pkg-scan() {
 		for PACK in ${PACKLIST}
 		do
 				#Checks if a package is already installed
-				dpkg -s $PACK &> /dev/null
-				local STPCHK=$(echo $?)
-				if [ ${STPCHK} -eq 0 ]
+                if dpkg -s ${PACK} &> /dev/null;
 				then
 						# Send pre-installed package ELF files to Analyze
 						analyze-send ${PACK} repo-pkg.log 
