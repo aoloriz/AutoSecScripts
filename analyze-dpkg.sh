@@ -1,4 +1,4 @@
-#/bin/bash!
+#!/bin/bash
 
 # analyze-dpkg: Tool for sending all ELF files in packages 
 # maintained for a Debian based Linux distribution (Ubuntu, Kali etc.) to 
